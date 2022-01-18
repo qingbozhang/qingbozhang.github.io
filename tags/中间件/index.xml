@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>中间件 on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/</link>
+    <description>Recent content in 中间件 on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 02 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>rocketMQ nameserv</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/2/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/2/</guid>
+      <description>架构设计 Broker消息服务器在启动时向所有NameServer注册，消息生产者（Producer）在发送消息之前先从NameServer获</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ 整体架构</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/1/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/1/</guid>
+      <description>整体架构 Producer：消息发布的角色，支持分布式集群方式部署。Producer通过MQ的负载均衡模块选择相应的Broker集群队列进行消</description>
+    </item>
+    
+    <item>
+      <title>mybatis 整体架构</title>
+      <link>https://qingbozhang.github.io/post/mybatis/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/mybatis/</guid>
+      <description>架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &amp;ndash; 类型模块 type 配置文件别名、JDBC &amp;lt;-转换-&amp;</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ 消息发送</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/3/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/3/</guid>
+      <description>消息发送 消息 Message的基础属性主要包括消息所属主题topic、消息Flag（RocketMQ不做处理）、扩展属性、消息体。 Messag</description>
+    </item>
+    
+    <item>
+      <title>sentinel 概览</title>
+      <link>https://qingbozhang.github.io/post/sentinel/1/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sentinel/1/</guid>
+      <description>项目结构 sentinel-core 核心模块，限流、降级、系统保护等都在这里实现 sentinel-dashboard 控制台模块，可以对连接上的sentinel客户端实现可视化的管理 sentinel-transport 传输模块，提供了基</description>
+    </item>
+    
+  </channel>
+</rss>

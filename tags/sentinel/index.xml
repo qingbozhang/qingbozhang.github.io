@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>sentinel on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/sentinel/</link>
+    <description>Recent content in sentinel on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 01 Jan 2021 15:00:00 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/sentinel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>sentinel 概览</title>
+      <link>https://qingbozhang.github.io/post/sentinel/1/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sentinel/1/</guid>
+      <description>项目结构 sentinel-core 核心模块，限流、降级、系统保护等都在这里实现 sentinel-dashboard 控制台模块，可以对连接上的sentinel客户端实现可视化的管理 sentinel-transport 传输模块，提供了基</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on bobo的窝</title>
+    <link>https://qingbozhang.github.io/categories/</link>
+    <description>Recent content in Categories on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 01 Sep 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>redis</title>
+      <link>https://qingbozhang.github.io/categories/redis/</link>
+      <pubDate>Wed, 01 Sep 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/redis/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Java</title>
+      <link>https://qingbozhang.github.io/categories/java/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MQ</title>
+      <link>https://qingbozhang.github.io/categories/mq/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/mq/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>CS</title>
+      <link>https://qingbozhang.github.io/categories/cs/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/cs/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>spring</title>
+      <link>https://qingbozhang.github.io/categories/spring/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/spring/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>中间件</title>
+      <link>https://qingbozhang.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

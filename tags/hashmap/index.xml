@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hashmap on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/hashmap/</link>
+    <description>Recent content in hashmap on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 02 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/hashmap/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HashMap 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/hashmap/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/hashmap/</guid>
+      <description>1.7 &amp;lt;-&amp;gt; 1.8不同 hash 扰动函数 计算方式 9次 -&amp;gt; 2次 扩容 部分节点无需重新计算hash 1.7 扩容之后链表倒置，并发引起环状链表死循环，1.8 尾插法解决此问题</description>
+    </item>
+    
+  </channel>
+</rss>

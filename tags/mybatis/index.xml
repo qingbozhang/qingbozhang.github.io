@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>mybatis on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/mybatis/</link>
+    <description>Recent content in mybatis on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 01 Jan 2021 15:00:00 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/mybatis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mybatis 整体架构</title>
+      <link>https://qingbozhang.github.io/post/mybatis/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/mybatis/</guid>
+      <description>架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &amp;ndash; 类型模块 type 配置文件别名、JDBC &amp;lt;-转换-&amp;</description>
+    </item>
+    
+  </channel>
+</rss>

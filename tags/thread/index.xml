@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>thread on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/thread/</link>
+    <description>Recent content in thread on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 01 Dec 2020 15:00:00 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/thread/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Java 性能调优实战</title>
+      <link>https://qingbozhang.github.io/post/work/1/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/work/1/</guid>
+      <description>背景 主要功能消费 talos 队列，对 nginx access log 进行解析、过滤、聚合等处理，然后转发到另一个队列。 主要特点有以下几个： 数据量大，1.6w/s 1 天大概 8 亿 需要</description>
+    </item>
+    
+  </channel>
+</rss>

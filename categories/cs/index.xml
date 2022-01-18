@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CS on bobo的窝</title>
+    <link>https://qingbozhang.github.io/categories/cs/</link>
+    <description>Recent content in CS on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 01 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/categories/cs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>网络</title>
+      <link>https://qingbozhang.github.io/post/net/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/net/</guid>
+      <description>&lt;h2 id=&#34;tcp-的三次握手&#34;&gt;TCP 的三次握手&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://qingbozhang.github.io/net/0.png&#34; alt=&#34;tcp&#34;&gt;
+三次握手的原因
+第三次握手是为了防止失效的连接请求到达服务器，导致服务器建立错误的连接。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>排序</title>
+      <link>https://qingbozhang.github.io/post/sort/</link>
+      <pubDate>Wed, 01 Jan 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sort/</guid>
+      <description>&lt;h2 id=&#34;快排&#34;&gt;快排&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;思想 取数组一个元素（一般取最后一个或第一个）归位
+一分为二 依次递归，直到元素剩一个&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

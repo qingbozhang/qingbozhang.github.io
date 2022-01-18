@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>util on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/util/</link>
+    <description>Recent content in util on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 01 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/util/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>java 集合</title>
+      <link>https://qingbozhang.github.io/post/java/container/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/container/</guid>
+      <description>ArrayList 数组结构，如可预期长度建议使用时传入capacity避免扩容影响性能 1 2 3 4 5 6 7 8 9 10 11 12 13 // 扩容 private void grow(int minCapacity) { int oldCapacity = elementData.length; // old + old / 2 int newCapacity = oldCapacity</description>
+    </item>
+    
+  </channel>
+</rss>

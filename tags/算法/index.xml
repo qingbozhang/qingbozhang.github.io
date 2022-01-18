@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>算法 on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/%E7%AE%97%E6%B3%95/</link>
+    <description>Recent content in 算法 on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 01 Jan 2020 15:00:00 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/%E7%AE%97%E6%B3%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>排序</title>
+      <link>https://qingbozhang.github.io/post/sort/</link>
+      <pubDate>Wed, 01 Jan 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sort/</guid>
+      <description>&lt;h2 id=&#34;快排&#34;&gt;快排&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;思想 取数组一个元素（一般取最后一个或第一个）归位
+一分为二 依次递归，直到元素剩一个&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

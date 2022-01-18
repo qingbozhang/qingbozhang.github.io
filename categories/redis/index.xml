@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>redis on bobo的窝</title>
+    <link>https://qingbozhang.github.io/categories/redis/</link>
+    <description>Recent content in redis on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 01 Sep 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/categories/redis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>redis - sentinel</title>
+      <link>https://qingbozhang.github.io/post/redis/sentinel/</link>
+      <pubDate>Wed, 01 Sep 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/redis/sentinel/</guid>
+      <description>&lt;p&gt;哨兵高可用解决方案。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://qingbozhang.github.io/redis/1.png&#34; alt=&#34;sentinel&#34;&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>redis - 字典</title>
+      <link>https://qingbozhang.github.io/post/redis/dict/</link>
+      <pubDate>Tue, 31 Aug 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/redis/dict/</guid>
+      <description>字典 字典在Redis中的应用相当广泛，Redis 底层就使用字典来实现的。 比如我们执行: 1 SET msg &amp;#34;hello world&amp;#34; 这个键值对就是保存在字典里面的。除了表述数据</description>
+    </item>
+    
+  </channel>
+</rss>

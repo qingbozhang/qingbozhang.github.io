@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>mybatis 整体架构 - bobo的窝</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="qingbozhang" />
+  <meta name="description" content="架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &amp;ndash; 类型模块 type 配置文件别名、JDBC &amp;lt;-转换-&amp;" />
+
+  <meta name="keywords" content="Java, golang, 架构" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.93.0-DEV" />
+
+
+<link rel="canonical" href="https://qingbozhang.github.io/post/mybatis/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.b3a8813c06e6d785beba22bf8264e174fa2cb3a396b22f9ba24e2c00c18aaf7f.css" integrity="sha256-s6iBPAbm14W&#43;uiK/gmThdPoss6OWsi&#43;bok4sAMGKr38=" media="screen" crossorigin="anonymous">
+
+
+
+
+
+<meta property="og:title" content="mybatis 整体架构" />
+<meta property="og:description" content="架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &ndash; 类型模块 type 配置文件别名、JDBC &lt;-转换-&" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://qingbozhang.github.io/post/mybatis/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-01-01T15:00:00+08:00" />
+<meta property="article:modified_time" content="2021-01-01T15:00:00+08:00" />
+
+<meta itemprop="name" content="mybatis 整体架构">
+<meta itemprop="description" content="架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &ndash; 类型模块 type 配置文件别名、JDBC &lt;-转换-&"><meta itemprop="datePublished" content="2021-01-01T15:00:00+08:00" />
+<meta itemprop="dateModified" content="2021-01-01T15:00:00+08:00" />
+<meta itemprop="wordCount" content="2093">
+<meta itemprop="keywords" content="mybatis,中间件," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="mybatis 整体架构"/>
+<meta name="twitter:description" content="架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &ndash; 类型模块 type 配置文件别名、JDBC &lt;-转换-&"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">bobo</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/">首页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/categories/">分类</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      bobo
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/">首页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">mybatis 整体架构</h1>
+      
+      <div class="post-meta">
+        <time datetime="2021-01-01" class="post-time">
+          2021-01-01
+        </time>
+        <div class="post-category">
+            <a href="https://qingbozhang.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"> 中间件 </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#架构">架构</a></li>
+    <li><a href="#模块">模块</a>
+      <ul>
+        <li><a href="#缓存模块">缓存模块</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h2 id="架构">架构</h2>
+<p>MyBatis 的整体架构分为三层：</p>
+<ol>
+<li>基础支持层</li>
+<li>核心处理层</li>
+<li>接口层</li>
+</ol>
+<p><img src="/mybatis/1.png" alt="mybatis"></p>
+<h2 id="模块">模块</h2>
+<p>主要模块列表</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>包</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>反射模块</td>
+<td>reflection</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>类型模块</td>
+<td>type</td>
+<td>配置文件别名、JDBC &lt;-转换-&gt; Java</td>
+</tr>
+<tr>
+<td>日志模块</td>
+<td>logging</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>IO 模块</td>
+<td>io</td>
+<td>资源加载、对类加载器进行封装，确定类加载器的使用顺序</td>
+</tr>
+<tr>
+<td>解析器模块</td>
+<td>parsing</td>
+<td>解析配置文件、处理动态 SQL</td>
+</tr>
+<tr>
+<td>数据源模块</td>
+<td>datasource</td>
+<td>MyBatis 自身提供了相应的数据源实现，同时也提供了与第三方数据源集成的接口</td>
+</tr>
+<tr>
+<td>事务模块</td>
+<td>transaction</td>
+<td>对数据库的事务进行了抽象</td>
+</tr>
+<tr>
+<td>缓存模块</td>
+<td>cache</td>
+<td>提供了<strong>一级缓存和二级缓存</strong></td>
+</tr>
+<tr>
+<td>Binding 模块</td>
+<td>binding</td>
+<td>Mapper 接口与映射配置文件关联</td>
+</tr>
+<tr>
+<td>注解模块</td>
+<td>annotations</td>
+<td>MyBatis 提供了<strong>注解</strong>，一些简单 SQL 操作可以在 Mapper 上使用注解完成，但是复杂的 SQL 还是建议写在 XML 中</td>
+</tr>
+<tr>
+<td>异常模块</td>
+<td>exceptions</td>
+<td>&ndash;</td>
+</tr>
+<tr>
+<td>配置解析</td>
+<td>builder、mapping</td>
+<td>配置的解析，配置信息解析后保存到 <strong>Configuration</strong> 对象中，日后会利用该对象创建SqlSessionFactory。mapping 映射</td>
+</tr>
+<tr>
+<td>scripting</td>
+<td>scripting</td>
+<td>动态 SQL</td>
+</tr>
+<tr>
+<td>SQL 执行</td>
+<td>executor、cursor</td>
+<td>executor 是<strong>执行器</strong>，cursor 为结果集游标。executor 主要负责维护一级缓存和二级缓存</td>
+</tr>
+<tr>
+<td>插件</td>
+<td>plugin</td>
+<td>用户可以添加自定义插件对 Mybatis 进行扩展</td>
+</tr>
+<tr>
+<td>接口层</td>
+<td>session</td>
+<td>核心是 SqlSession 接口，该接口中定义了 MyBatis 暴露给应用程序调用的 API</td>
+</tr>
+</tbody>
+</table>
+<p>SQL 执行示意图</p>
+<p><img src="/mybatis/05.png" alt="SQL 执行"></p>
+<p>以上模块不一一分析，只选取重要模块进行走读。</p>
+<h3 id="缓存模块">缓存模块</h3>
+<p>MyBatis作为一个强大的持久层框架，缓存是其必不可少的功能之一。 MyBatis中的缓存 是两层结构的，分为一级缓存、二级缓存，<strong>但在本质上是相同的，它们使用的都是 Cache 接 口的实现</strong>。</p>
+<p>在 MyBatis 的缓存模块中，使用了装饰器模式的变体，其中将 Decorator接口和 Component接口合并为一个 Component接口。</p>
+<p>使用装饰器模式有两个明显的优点：</p>
+<ul>
+<li>
+<p>相较于继承来说，装饰器模式的灵活性更强，可扩展性也强。正如前面所说，继承方 式会导致大量子类的情况。而装饰者模式可以将复杂的功能切分成一个个独立的装饰 器，通过多个独立装饰器的动态组合，创建不同功能的组件，从而满足多种不同需求。</p>
+</li>
+<li>
+<p>当有新功 能需要添加时，只需要添加新的装饰器实现类，然后通过组合方式添加这个 新装饰器即可，无须修改己有类的代码 ，符合“开放一封闭”原则。</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>cache</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PerpetualCache</td>
+<td>实现 Cache 接口，<strong>永不过期</strong>的 Cache 实现类，基于 HashMap 实现类。</td>
+</tr>
+<tr>
+<td>LoggingCache</td>
+<td>支持打印日志的 Cache 实现类</td>
+</tr>
+<tr>
+<td>BlockingCache</td>
+<td>阻塞的 Cache 实现类，场景当线程 A 在获取不到缓存值时，一般会去设置对应的缓存值，这样就避免其他也需要该缓存的线程 B、C 等，重复添加缓存。</td>
+</tr>
+<tr>
+<td>SynchronizedCache</td>
+<td>同步的 Cache 实现类。方法添加了 <code>synchronized</code> 修饰符</td>
+</tr>
+<tr>
+<td>ScheduledCache</td>
+<td><strong>定时清空整个容器</strong>的 Cache</td>
+</tr>
+<tr>
+<td>FifoCache</td>
+<td><strong>基于先进先出的淘汰机制</strong>的 Cache</td>
+</tr>
+<tr>
+<td>LruCache</td>
+<td><strong>基于最少使用的淘汰机制</strong>的 Cache</td>
+</tr>
+<tr>
+<td>WeakCache</td>
+<td>基于 WeakReference 实现的 Cache，如果value为空则说明被GC清理了在缓存中删除该key。如果非空为了避免被 GC 掉，所以添加到 <code>hardLinksToAvoidGarbageCollection</code> 队头（不超过numberOfHardLinks上限）</td>
+</tr>
+<tr>
+<td>SoftCache</td>
+<td>软引用和弱引用的特性基本一致， 主要的区别在于软引用在内存不足时才会被回收。如果一个对象只具有软引用，Java GC在内存充足的时候不会回收它，内存不足时才会被回收。</td>
+</tr>
+</tbody>
+</table>
+<p><code>CacheKey</code> 做为缓存键实现 Cloneable、Serializable 接口。</p>
+<h4 id="一级缓存">一级缓存</h4>
+<p>SqlSession 级别的缓存，默认开启</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;configuration&gt;</span>
+	<span class="nt">&lt;settings&gt;</span>
+		<span class="nt">&lt;setting</span> <span class="na">name=</span><span class="s">&#34;localCacheScope&#34;</span> <span class="na">value=</span><span class="s">&#34;SESSION|STATEMENT&#34;</span> <span class="nt">/&gt;</span>
+	<span class="nt">&lt;/settings&gt;</span>
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>localCacheScope用于配置一级缓存的范围，默认值是SESSION，表示SqlSession范围；如果配置为STATEMENT，则表示SqlSession范围内的一个查询范围，但它并不是一个Statement实例范围。</p>
+<p>STATEMENT举例：查询Student对象发送一次sql查询，紧接着再发一次sql查询关联的Teacher对象，这个完整过程称之为一个查询。</p>
+<p>一级缓存默认开启，且没有全局关闭的配置开关。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-xml" data-lang="xml"><span class="nt">&lt;select</span> <span class="err">...</span> <span class="na">flushCache=</span><span class="s">&#34;false&#34;</span> <span class="na">useCache=</span><span class="s">&#34;true|false&#34;</span><span class="nt">/&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>flushCache：同时影响了一级、二级缓存，flushCache=true，会导致清空本条sql（当前MappedStatement）的一级、二级缓存，注意是当前的，不影响其他的 MappedStatement。</p>
+<p>useCache：配置本条MappedStatement是否使用二级缓存，useCache=true，从二级缓存中获取，没有获取到，才从数据库中获取。</p>
+<p>在执行update、insert、delete、flushCache=&ldquo;true&rdquo;、commit、rollback、LocalCacheScope.STATEMENT等情况下，一级缓存就都会被清空。</p>
+<p>每个SqlSession中持有了Executor，每个Executor中有一个LocalCache。当用户发起查询时，MyBatis根据当前执行的语句生成<code>MappedStatement</code>，在Local Cache进行查询，如果缓存命中的话，直接返回结果给用户，如果缓存没有命中的话，查询数据库，结果写入<code>Local Cache</code>，最后返回结果给用户。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">BaseExecutor</span> <span class="kd">implements</span> <span class="n">Executor</span> <span class="o">{</span>
+	<span class="kd">protected</span> <span class="n">PerpetualCache</span> <span class="n">localCache</span><span class="o">;</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>总结</strong></p>
+<ol>
+<li>MyBatis一级缓存的生命周期和SqlSession一致。</li>
+<li>MyBatis一级缓存内部设计简单，只是一个没有容量限定的HashMap，在缓存的功能性上有所欠缺。</li>
+<li>MyBatis的一级缓存最大范围是SqlSession内部，有多个SqlSession或者分布式的环境下，数据库写操作会引起脏数据，建议设定缓存级别为Statement。</li>
+</ol>
+<h4 id="二级缓存">二级缓存</h4>
+
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">qingbozhang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2021-01-01
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://qingbozhang.github.io/tags/mybatis/">mybatis</a>
+          <a href="https://qingbozhang.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/">中间件</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/net/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">网络</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/rocketmq/3/">
+            <span class="next-text nav-default">rocketMQ 消息发送</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:770554403@qq.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://qingbozhang.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2017 -
+    2022
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        bobo
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

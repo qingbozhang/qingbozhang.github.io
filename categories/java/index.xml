@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Java on bobo的窝</title>
+    <link>https://qingbozhang.github.io/categories/java/</link>
+    <description>Recent content in Java on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 02 Feb 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/categories/java/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>synchronized 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/synchronized/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/synchronized/</guid>
+      <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;众所周知 &lt;code&gt;synchronized&lt;/code&gt; 锁在 &lt;code&gt;Java&lt;/code&gt; 中经常使用它的源码是 &lt;code&gt;C++&lt;/code&gt; 实现的，它的实现原理是怎样的呢？本文以 &lt;code&gt;OpenJDK 8&lt;/code&gt; 为例探究以下内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;synchronized 是如何工作的&lt;/li&gt;
+&lt;li&gt;synchronized 锁升级过程&lt;/li&gt;
+&lt;li&gt;重量级锁的队列之间协作过程和策略&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>GC - 1</title>
+      <link>https://qingbozhang.github.io/post/java/gc/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/gc/</guid>
+      <description>JVM 运行时数据区 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 +---------------------+------------------------------+ | 1 Shared | 2 Thread | | +----------------+ | +-----------+ +----------+ | | | | | | | | | | | | heap | | | jvm stack | | native stack | | | | | | | | | | +----------------+ |</description>
+    </item>
+    
+    <item>
+      <title>HashMap 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/hashmap/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/hashmap/</guid>
+      <description>1.7 &amp;lt;-&amp;gt; 1.8不同 hash 扰动函数 计算方式 9次 -&amp;gt; 2次 扩容 部分节点无需重新计算hash 1.7 扩容之后链表倒置，并发引起环状链表死循环，1.8 尾插法解决此问题</description>
+    </item>
+    
+    <item>
+      <title>java 集合</title>
+      <link>https://qingbozhang.github.io/post/java/container/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/container/</guid>
+      <description>ArrayList 数组结构，如可预期长度建议使用时传入capacity避免扩容影响性能 1 2 3 4 5 6 7 8 9 10 11 12 13 // 扩容 private void grow(int minCapacity) { int oldCapacity = elementData.length; // old + old / 2 int newCapacity = oldCapacity</description>
+    </item>
+    
+    <item>
+      <title>Java 性能调优实战</title>
+      <link>https://qingbozhang.github.io/post/work/1/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/work/1/</guid>
+      <description>背景 主要功能消费 talos 队列，对 nginx access log 进行解析、过滤、聚合等处理，然后转发到另一个队列。 主要特点有以下几个： 数据量大，1.6w/s 1 天大概 8 亿 需要</description>
+    </item>
+    
+  </channel>
+</rss>

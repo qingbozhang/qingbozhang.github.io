@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Spring Security on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/spring-security/</link>
+    <description>Recent content in Spring Security on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 01 Jan 2021 15:00:00 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/spring-security/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Spring Security 概览</title>
+      <link>https://qingbozhang.github.io/post/spring-security/1/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/spring-security/1/</guid>
+      <description>核心组件 Spring Security是如何完成身份认证的？ 用户名和密码被过滤器获取到，封装成 Authentication, 通常情况下是 UsernamePasswordAuthenticationToken 这个实现类。 AuthenticationManager 身份管理器负责验证这个 Authentication 认证</description>
+    </item>
+    
+  </channel>
+</rss>

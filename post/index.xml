@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on bobo的窝</title>
+    <link>https://qingbozhang.github.io/post/</link>
+    <description>Recent content in Posts on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 01 Sep 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>redis - sentinel</title>
+      <link>https://qingbozhang.github.io/post/redis/sentinel/</link>
+      <pubDate>Wed, 01 Sep 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/redis/sentinel/</guid>
+      <description>&lt;p&gt;哨兵高可用解决方案。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://qingbozhang.github.io/redis/1.png&#34; alt=&#34;sentinel&#34;&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>redis - 字典</title>
+      <link>https://qingbozhang.github.io/post/redis/dict/</link>
+      <pubDate>Tue, 31 Aug 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/redis/dict/</guid>
+      <description>字典 字典在Redis中的应用相当广泛，Redis 底层就使用字典来实现的。 比如我们执行: 1 SET msg &amp;#34;hello world&amp;#34; 这个键值对就是保存在字典里面的。除了表述数据</description>
+    </item>
+    
+    <item>
+      <title>synchronized 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/synchronized/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/synchronized/</guid>
+      <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;众所周知 &lt;code&gt;synchronized&lt;/code&gt; 锁在 &lt;code&gt;Java&lt;/code&gt; 中经常使用它的源码是 &lt;code&gt;C++&lt;/code&gt; 实现的，它的实现原理是怎样的呢？本文以 &lt;code&gt;OpenJDK 8&lt;/code&gt; 为例探究以下内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;synchronized 是如何工作的&lt;/li&gt;
+&lt;li&gt;synchronized 锁升级过程&lt;/li&gt;
+&lt;li&gt;重量级锁的队列之间协作过程和策略&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+    <item>
+      <title>GC - 1</title>
+      <link>https://qingbozhang.github.io/post/java/gc/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/gc/</guid>
+      <description>JVM 运行时数据区 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 +---------------------+------------------------------+ | 1 Shared | 2 Thread | | +----------------+ | +-----------+ +----------+ | | | | | | | | | | | | heap | | | jvm stack | | native stack | | | | | | | | | | +----------------+ |</description>
+    </item>
+    
+    <item>
+      <title>HashMap 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/hashmap/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/hashmap/</guid>
+      <description>1.7 &amp;lt;-&amp;gt; 1.8不同 hash 扰动函数 计算方式 9次 -&amp;gt; 2次 扩容 部分节点无需重新计算hash 1.7 扩容之后链表倒置，并发引起环状链表死循环，1.8 尾插法解决此问题</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ nameserv</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/2/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/2/</guid>
+      <description>架构设计 Broker消息服务器在启动时向所有NameServer注册，消息生产者（Producer）在发送消息之前先从NameServer获</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ 整体架构</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/1/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/1/</guid>
+      <description>整体架构 Producer：消息发布的角色，支持分布式集群方式部署。Producer通过MQ的负载均衡模块选择相应的Broker集群队列进行消</description>
+    </item>
+    
+    <item>
+      <title>java 集合</title>
+      <link>https://qingbozhang.github.io/post/java/container/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/container/</guid>
+      <description>ArrayList 数组结构，如可预期长度建议使用时传入capacity避免扩容影响性能 1 2 3 4 5 6 7 8 9 10 11 12 13 // 扩容 private void grow(int minCapacity) { int oldCapacity = elementData.length; // old + old / 2 int newCapacity = oldCapacity</description>
+    </item>
+    
+    <item>
+      <title>网络</title>
+      <link>https://qingbozhang.github.io/post/net/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/net/</guid>
+      <description>&lt;h2 id=&#34;tcp-的三次握手&#34;&gt;TCP 的三次握手&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://qingbozhang.github.io/net/0.png&#34; alt=&#34;tcp&#34;&gt;
+三次握手的原因
+第三次握手是为了防止失效的连接请求到达服务器，导致服务器建立错误的连接。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>mybatis 整体架构</title>
+      <link>https://qingbozhang.github.io/post/mybatis/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/mybatis/</guid>
+      <description>架构 MyBatis 的整体架构分为三层： 基础支持层 核心处理层 接口层 模块 主要模块列表 模块 包 说明 反射模块 reflection &amp;ndash; 类型模块 type 配置文件别名、JDBC &amp;lt;-转换-&amp;</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ 消息发送</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/3/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/3/</guid>
+      <description>消息发送 消息 Message的基础属性主要包括消息所属主题topic、消息Flag（RocketMQ不做处理）、扩展属性、消息体。 Messag</description>
+    </item>
+    
+    <item>
+      <title>sentinel 概览</title>
+      <link>https://qingbozhang.github.io/post/sentinel/1/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sentinel/1/</guid>
+      <description>项目结构 sentinel-core 核心模块，限流、降级、系统保护等都在这里实现 sentinel-dashboard 控制台模块，可以对连接上的sentinel客户端实现可视化的管理 sentinel-transport 传输模块，提供了基</description>
+    </item>
+    
+    <item>
+      <title>Spring Security 概览</title>
+      <link>https://qingbozhang.github.io/post/spring-security/1/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/spring-security/1/</guid>
+      <description>核心组件 Spring Security是如何完成身份认证的？ 用户名和密码被过滤器获取到，封装成 Authentication, 通常情况下是 UsernamePasswordAuthenticationToken 这个实现类。 AuthenticationManager 身份管理器负责验证这个 Authentication 认证</description>
+    </item>
+    
+    <item>
+      <title>grpc-java - 1</title>
+      <link>https://qingbozhang.github.io/post/grpc-java/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/grpc-java/</guid>
+      <description>客户端调用 客户端调用模板 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 public class ClientMain { @Getter public static class HelloClient { private HelloGrpc.HelloStub asyncStub; private HelloGrpc.HelloBlockingStub blockingStub; private HelloGrpc.HelloFutureStub futureStub; public HelloClient(ManagedChannel channel) { this.channel = channel; asyncStub = HelloGrpc.newStub(channel); blockingStub = HelloGrpc.newBlockingStub(channel);</description>
+    </item>
+    
+    <item>
+      <title>Java 性能调优实战</title>
+      <link>https://qingbozhang.github.io/post/work/1/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/work/1/</guid>
+      <description>背景 主要功能消费 talos 队列，对 nginx access log 进行解析、过滤、聚合等处理，然后转发到另一个队列。 主要特点有以下几个： 数据量大，1.6w/s 1 天大概 8 亿 需要</description>
+    </item>
+    
+    <item>
+      <title>排序</title>
+      <link>https://qingbozhang.github.io/post/sort/</link>
+      <pubDate>Wed, 01 Jan 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/sort/</guid>
+      <description>&lt;h2 id=&#34;快排&#34;&gt;快排&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;思想 取数组一个元素（一般取最后一个或第一个）归位
+一分为二 依次递归，直到元素剩一个&lt;/p&gt;
+&lt;/blockquote&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

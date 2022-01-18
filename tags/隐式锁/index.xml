@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>隐式锁 on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/%E9%9A%90%E5%BC%8F%E9%94%81/</link>
+    <description>Recent content in 隐式锁 on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 02 Feb 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/%E9%9A%90%E5%BC%8F%E9%94%81/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>synchronized 实现原理</title>
+      <link>https://qingbozhang.github.io/post/java/synchronized/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/synchronized/</guid>
+      <description>&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;众所周知 &lt;code&gt;synchronized&lt;/code&gt; 锁在 &lt;code&gt;Java&lt;/code&gt; 中经常使用它的源码是 &lt;code&gt;C++&lt;/code&gt; 实现的，它的实现原理是怎样的呢？本文以 &lt;code&gt;OpenJDK 8&lt;/code&gt; 为例探究以下内容。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;synchronized 是如何工作的&lt;/li&gt;
+&lt;li&gt;synchronized 锁升级过程&lt;/li&gt;
+&lt;li&gt;重量级锁的队列之间协作过程和策略&lt;/li&gt;
+&lt;/ul&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

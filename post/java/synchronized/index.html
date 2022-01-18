@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-cn" itemscope itemtype="http://schema.org/WebPage">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>synchronized 实现原理 - bobo的窝</title>
+  
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes"/>
+
+<meta name="MobileOptimized" content="width"/>
+<meta name="HandheldFriendly" content="true"/>
+
+
+<meta name="applicable-device" content="pc,mobile">
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="author" content="qingbozhang" />
+  <meta name="description" content="前言 众所周知 synchronized 锁在 Java 中经常使用它的源码是 C&#43;&#43; 实现的，它的实现原理是怎样的呢？本文以 OpenJDK 8 为例探究以下内容。
+ synchronized 是如何工作的 synchronized 锁升级过程 重量级锁的队列之间协作过程和策略 " />
+
+  <meta name="keywords" content="Java, golang, 架构" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.93.0-DEV" />
+
+
+<link rel="canonical" href="https://qingbozhang.github.io/post/java/synchronized/" />
+
+
+
+
+
+<link rel="icon" href="/favicon.ico" />
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/sass/jane.min.b3a8813c06e6d785beba22bf8264e174fa2cb3a396b22f9ba24e2c00c18aaf7f.css" integrity="sha256-s6iBPAbm14W&#43;uiK/gmThdPoss6OWsi&#43;bok4sAMGKr38=" media="screen" crossorigin="anonymous">
+
+
+
+
+
+<meta property="og:title" content="synchronized 实现原理" />
+<meta property="og:description" content="前言
+众所周知 synchronized 锁在 Java 中经常使用它的源码是 C&#43;&#43; 实现的，它的实现原理是怎样的呢？本文以 OpenJDK 8 为例探究以下内容。
+
+synchronized 是如何工作的
+synchronized 锁升级过程
+重量级锁的队列之间协作过程和策略
+" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://qingbozhang.github.io/post/java/synchronized/" /><meta property="article:section" content="post" />
+<meta property="article:published_time" content="2021-02-02T15:43:48+08:00" />
+<meta property="article:modified_time" content="2021-02-02T15:43:48+08:00" />
+
+<meta itemprop="name" content="synchronized 实现原理">
+<meta itemprop="description" content="前言
+众所周知 synchronized 锁在 Java 中经常使用它的源码是 C&#43;&#43; 实现的，它的实现原理是怎样的呢？本文以 OpenJDK 8 为例探究以下内容。
+
+synchronized 是如何工作的
+synchronized 锁升级过程
+重量级锁的队列之间协作过程和策略
+"><meta itemprop="datePublished" content="2021-02-02T15:43:48+08:00" />
+<meta itemprop="dateModified" content="2021-02-02T15:43:48+08:00" />
+<meta itemprop="wordCount" content="5004">
+<meta itemprop="keywords" content="java,synchronized,隐式锁," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="synchronized 实现原理"/>
+<meta name="twitter:description" content="前言
+众所周知 synchronized 锁在 Java 中经常使用它的源码是 C&#43;&#43; 实现的，它的实现原理是怎样的呢？本文以 OpenJDK 8 为例探究以下内容。
+
+synchronized 是如何工作的
+synchronized 锁升级过程
+重量级锁的队列之间协作过程和策略
+"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+
+
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">bobo</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/">首页</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/post/">归档</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/tags/">标签</a>
+          
+        
+      </li><li class="mobile-menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/categories/">分类</a>
+          
+        
+      </li>
+    
+
+    
+  </ul>
+</nav>
+
+
+  
+    
+
+
+
+
+
+
+  <link rel="stylesheet" href="/lib/photoswipe/photoswipe.min.css" />
+  <link rel="stylesheet" href="/lib/photoswipe/default-skin/default-skin.min.css" />
+
+
+
+
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+<div class="pswp__bg"></div>
+
+<div class="pswp__scroll-wrap">
+    
+    <div class="pswp__container">
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+      <div class="pswp__item"></div>
+    </div>
+    
+    <div class="pswp__ui pswp__ui--hidden">
+    <div class="pswp__top-bar">
+      
+      <div class="pswp__counter"></div>
+      <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+      <button class="pswp__button pswp__button--share" title="Share"></button>
+      <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+      <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+      
+      
+      <div class="pswp__preloader">
+        <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+            <div class="pswp__preloader__donut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+      <div class="pswp__share-tooltip"></div>
+    </div>
+    <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+    </button>
+    <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+    </button>
+    <div class="pswp__caption">
+      <div class="pswp__caption__center"></div>
+    </div>
+    </div>
+    </div>
+</div>
+
+  
+
+  
+
+  
+
+  <header id="header" class="header container">
+    <div class="logo-wrapper">
+  <a href="/" class="logo">
+    
+      bobo
+    
+  </a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/">首页</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/post/">归档</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/tags/">标签</a>
+          
+
+        
+
+      </li>
+    
+        <li class="menu-item">
+        
+          
+          
+            <a class="menu-item-link" href="https://qingbozhang.github.io/categories/">分类</a>
+          
+
+        
+
+      </li>
+    
+
+    
+    
+
+    
+  </ul>
+</nav>
+
+  </header>
+
+  <div id="mobile-panel">
+    <main id="main" class="main bg-llight">
+      <div class="content-wrapper">
+        <div id="content" class="content container">
+          <article class="post bg-white">
+    
+    <header class="post-header">
+      <h1 class="post-title">synchronized 实现原理</h1>
+      
+      <div class="post-meta">
+        <time datetime="2021-02-02" class="post-time">
+          2021-02-02
+        </time>
+        <div class="post-category">
+            <a href="https://qingbozhang.github.io/categories/java/"> Java </a>
+            
+          </div>
+        
+
+        
+        
+
+        
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">文章目录</h2>
+  <div class="post-toc-content">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#对象头">对象头</a></li>
+    <li><a href="#偏向锁">偏向锁</a>
+      <ul>
+        <li><a href="#流程">流程</a></li>
+        <li><a href="#偏向锁的撤销">偏向锁的撤销</a></li>
+        <li><a href="#优点">优点</a></li>
+        <li><a href="#缺点">缺点</a></li>
+      </ul>
+    </li>
+    <li><a href="#轻量级锁">轻量级锁</a>
+      <ul>
+        <li><a href="#加锁">加锁</a></li>
+        <li><a href="#解锁">解锁</a></li>
+        <li><a href="#优点-1">优点</a></li>
+        <li><a href="#缺点-1">缺点</a></li>
+      </ul>
+    </li>
+    <li><a href="#自旋锁">自旋锁</a>
+      <ul>
+        <li><a href="#适应性自旋锁">适应性自旋锁</a></li>
+        <li><a href="#优点-2">优点</a></li>
+        <li><a href="#缺点-2">缺点</a></li>
+      </ul>
+    </li>
+    <li><a href="#重量级锁">重量级锁</a>
+      <ul>
+        <li><a href="#队列协作流程图">队列协作流程图</a></li>
+      </ul>
+    </li>
+    <li><a href="#源码分析">源码分析</a>
+      <ul>
+        <li><a href="#monitor-竞争过程">monitor 竞争过程</a></li>
+        <li><a href="#monitor-等待">monitor 等待</a></li>
+        <li><a href="#monitor-释放">monitor 释放</a></li>
+        <li><a href="#notify-唤醒">notify 唤醒</a></li>
+      </ul>
+    </li>
+    <li><a href="#总结">总结</a></li>
+    <li><a href="#参考资料">参考资料</a></li>
+  </ul>
+</nav>
+  </div>
+</div>
+
+    
+    <div class="post-content">
+      <h2 id="前言">前言</h2>
+<p>众所周知 <code>synchronized</code> 锁在 <code>Java</code> 中经常使用它的源码是 <code>C++</code> 实现的，它的实现原理是怎样的呢？本文以 <code>OpenJDK 8</code> 为例探究以下内容。</p>
+<ul>
+<li>synchronized 是如何工作的</li>
+<li>synchronized 锁升级过程</li>
+<li>重量级锁的队列之间协作过程和策略</li>
+</ul>
+<h2 id="对象头">对象头</h2>
+<p>对象头的内容非常多这里我们只做简单介绍以引出后文。在 JVM 中对象布局分为三块区域：</p>
+<ul>
+<li>对象头</li>
+<li>实例数据</li>
+<li>对齐填充</li>
+</ul>
+<p><img src="/synchronized/object.png" alt="object"></p>
+<p>当线程访问同步块时首先需要获得锁并把相关信息存储在对象头中。所以 <code>wait</code>、<code>notify</code>、<code>notifyAll</code> 这些方法为什么被设计在 <code>Object</code> 中或许你已经找到答案了。</p>
+<p>Hotspot 有两种对象头：</p>
+<ul>
+<li>数组类型，使用 <code>arrayOopDesc</code> 来描述对象头</li>
+<li>其它，使用 <code>instanceOopDesc</code> 来描述对象头</li>
+</ul>
+<p>对象头由两部分组成</p>
+<ul>
+<li>Mark Word：存储自身的运行时数据，例如 HashCode、GC 年龄、锁相关信息等内容。</li>
+<li>Klass Pointer：类型指针指向它的类元数据的指针。</li>
+</ul>
+<p>64 位虚拟机 Mark Word 是 64bit 其结构如下：</p>
+<p><img src="/synchronized/sync_1.png" alt="sync_1"></p>
+<p>在 JDK 6 中虚拟机团队对锁进行了重要改进，优化了其性能引入了 <code>偏向锁</code>、<code>轻量级锁</code>、<code>适应性自旋</code>、<code>锁消除</code>、<code>锁粗化</code>等实现，其中 <code>锁消除</code>和<code>锁粗化</code>本文不做详细讨论其余内容我们将对其进行逐一探究。</p>
+<p>总体上来说锁状态升级流程如下：</p>
+<p><img src="/synchronized/lock.png" alt="lock"></p>
+<h2 id="偏向锁">偏向锁</h2>
+<h3 id="流程">流程</h3>
+<p>当线程访问同步块并获取锁时处理流程如下：</p>
+<ol>
+<li>检查 <code>mark word</code> 的<code>线程 id</code> 。</li>
+<li>如果为空则设置 CAS 替换当前线程 id。如果替换成功则获取锁成功，如果失败则撤销偏向锁。</li>
+<li>如果不为空则检查 <code>线程 id</code>为是否为本线程。如果是则获取锁成功，如果失败则撤销偏向锁。</li>
+</ol>
+<p>持有偏向锁的线程以后每次进入这个锁相关的同步块时，只需比对一下 mark word 的线程 id 是否为本线程，如果是则获取锁成功。</p>
+<p>如果发生线程竞争发生 2、3 步失败的情况则需要撤销偏向锁。</p>
+<h3 id="偏向锁的撤销">偏向锁的撤销</h3>
+<ol>
+<li>偏向锁的撤销动作必须等待全局安全点</li>
+<li>暂停拥有偏向锁的线程，判断锁对象是否处于被锁定状态</li>
+<li>撤销偏向锁恢复到无锁（标志位为 01）或轻量级锁（标志位为 00）的状态</li>
+</ol>
+<h3 id="优点">优点</h3>
+<p>只有一个线程执行同步块时进一步提高性能，适用于一个线程反复获得同一锁的情况。偏向锁可以提高带有同步但无竞争的程序性能。</p>
+<h3 id="缺点">缺点</h3>
+<p>如果存在竞争会带来额外的锁撤销操作。</p>
+<h2 id="轻量级锁">轻量级锁</h2>
+<h3 id="加锁">加锁</h3>
+<p>多个线程竞争偏向锁导致偏向锁升级为轻量级锁</p>
+<ol>
+<li>JVM 在当前线程的栈帧中创建 Lock Reocrd，并将对象头中的 Mark Word 复制到 Lock Reocrd 中。（Displaced Mark Word）</li>
+<li>线程尝试使用 CAS 将对象头中的 Mark Word 替换为指向 Lock Reocrd 的指针。如果成功则获得锁，如果失败则先检查对象的 Mark Word 是否指向当前线程的栈帧如果是则说明已经获取锁，否则说明其它线程竞争锁则膨胀为重量级锁。</li>
+</ol>
+<h3 id="解锁">解锁</h3>
+<ol>
+<li>使用 CAS 操作将 Mark Word 还原</li>
+<li>如果第 1 步执行成功则释放完成</li>
+<li>如果第 1 步执行失败则膨胀为重量级锁。</li>
+</ol>
+<h3 id="优点-1">优点</h3>
+<p>其性能提升的依据是对于绝大部分的锁在整个生命周期内都是不会存在竞争。在多线程交替执行同步块的情况下，可以避免重量级锁引起的性能消耗。</p>
+<h3 id="缺点-1">缺点</h3>
+<p>在有多线程竞争的情况下轻量级锁增加了额外开销。</p>
+<h2 id="自旋锁">自旋锁</h2>
+<p>自旋是一种获取锁的机制并不是一个锁状态。在膨胀为重量级锁的过程中或重入时会多次尝试自旋获取锁以避免线程唤醒的开销，但是它会占用 CPU 的时间因此如果同步代码块执行时间很短自旋等待的效果就很好，反之则浪费了 CPU 资源。默认情况下自旋次数是 10 次用户可以使用参数 <code>-XX : PreBlockSpin</code> 来更改。那么如何优化来避免此情况发生呢？我们来看适应性自旋。</p>
+<h3 id="适应性自旋锁">适应性自旋锁</h3>
+<p>JDK 6 引入了自适应自旋锁，意味着自旋的次数不在固定，而是由前一次在同一个锁上的自旋时间及锁的拥有者的状态来决定。如果对于某个锁很少自旋成功那么以后有可能省略掉自旋过程以避免资源浪费。有了自适应自旋随着程序运行和性能监控信息的不断完善，虚拟机对程序锁的状况预测就会越来越准确，虛拟机就会变得越来越“聪明”了。</p>
+<h3 id="优点-2">优点</h3>
+<p>竞争的线程不会阻塞挂起，提高了程序响应速度。避免重量级锁引起的性能消耗。</p>
+<h3 id="缺点-2">缺点</h3>
+<p>如果线程始终无法获取锁，自旋消耗 CPU 最终会膨胀为重量级锁。</p>
+<h2 id="重量级锁">重量级锁</h2>
+<p>在重量级锁中没有竞争到锁的对象会 park 被挂起，退出同步块时 unpark 唤醒后续线程。唤醒操作涉及到操作系统调度会有额外的开销。</p>
+<p><code>ObjectMonitor</code> 中包含一个同步队列（由 <code>_cxq</code> 和 <code>_EntryList</code> 组成）一个等待队列（ <code>_WaitSet</code> ）。</p>
+<ul>
+<li>被<code>notify</code>或 <code>notifyAll</code> 唤醒时根据 <code>policy</code> 策略选择加入的队列（policy 默认为 0）</li>
+<li>退出同步块时根据 <code>QMode</code> 策略来唤醒下一个线程（QMode 默认为 0）</li>
+</ul>
+<p>这里稍微提及一下<strong>管程</strong>这个概念。synchronized 关键字及 <code>wait</code>、<code>notify</code>、<code>notifyAll</code> 这三个方法都是管程的组成部分。可以说管程就是一把解决并发问题的万能钥匙。有两大核心问题管程都是能够解决的：</p>
+<ul>
+<li><strong>互斥</strong>：即同一时刻只允许一个线程访问共享资源；</li>
+<li><strong>同步</strong>：即线程之间如何通信、协作。</li>
+</ul>
+<p><code>synchronized</code> 的 <code>monitor</code>锁机制和 JDK 并发包中的 <code>AQS</code> 是很相似的，只不过 <code>AQS</code> 中是一个同步队列多个等待队列。熟悉 <code>AQS</code> 的同学可以拿来做个对比。</p>
+<h3 id="队列协作流程图">队列协作流程图</h3>
+<p><img src="/synchronized/sync_2.png" alt="sync_2"></p>
+<h2 id="源码分析">源码分析</h2>
+<p>在 HotSpot 中 monitor 是由 ObjectMonitor 实现的。其源码是用 c++来实现的源文件是 ObjectMonitor.hpp 主要数据结构如下所示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">ObjectMonitor</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">_header</span>       <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">_count</span>        <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">_waiters</span>      <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>       <span class="c1">// 等待中的线程数
+</span><span class="c1"></span>    <span class="n">_recursions</span>   <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>       <span class="c1">// 线程重入次数
+</span><span class="c1"></span>    <span class="n">_object</span>       <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>    <span class="c1">// 存储该 monitor 的对象
+</span><span class="c1"></span>    <span class="n">_owner</span>        <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>    <span class="c1">// 指向拥有该 monitor 的线程
+</span><span class="c1"></span>    <span class="n">_WaitSet</span>      <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>    <span class="c1">// 等待线程 双向循环链表_WaitSet 指向第一个节点
+</span><span class="c1"></span>    <span class="n">_WaitSetLock</span>  <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+    <span class="n">_Responsible</span>  <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+    <span class="n">_succ</span>         <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+    <span class="n">_cxq</span>          <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>   <span class="c1">// 多线程竞争锁时的单向链表
+</span><span class="c1"></span>    <span class="n">FreeNext</span>      <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+    <span class="n">_EntryList</span>    <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>   <span class="c1">// _owner 从该双向循环链表中唤醒线程，
+</span><span class="c1"></span>    <span class="n">_SpinFreq</span>     <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+    <span class="n">_SpinClock</span>    <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+    <span class="n">OwnerIsThread</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+    <span class="n">_previous_owner_tid</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// 前一个拥有此监视器的线程 ID
+</span><span class="c1"></span>  <span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<ol>
+<li>_owner：初始时为 NULL。当有线程占有该 monitor 时 owner 标记为该线程的 ID。当线程释放 monitor 时 owner 恢复为 NULL。owner 是一个临界资源 JVM 是通过 CAS 操作来保证其线程安全的。</li>
+<li>_cxq：竞争队列所有请求锁的线程首先会被放在这个队列中（单向）。_cxq 是一个临界资源 JVM 通过 CAS 原子指令来修改_cxq 队列。
+每当有新来的节点入队，它的 next 指针总是指向之前队列的头节点，而_cxq 指针会指向该新入队的节点，所以是后来居上。</li>
+<li>_EntryList： _cxq 队列中有资格成为候选资源的线程会被移动到该队列中。</li>
+<li>_WaitSet: 等待队列因为调用 wait 方法而被阻塞的线程会被放在该队列中。</li>
+</ol>
+</blockquote>
+<h3 id="monitor-竞争过程">monitor 竞争过程</h3>
+<blockquote>
+<ol>
+<li>通过 CAS 尝试把 monitor 的 owner 字段设置为当前线程。</li>
+<li>如果设置之前的 owner 指向当前线程，说明当前线程再次进入 monitor，即重入锁执行 recursions ++ , 记录重入的次数。</li>
+<li>如果当前线程是第一次进入该 monitor, 设置 recursions 为 1,_owner 为当前线程，该线程成功获得锁并返回。</li>
+<li>如果获取锁失败，则等待锁的释放。</li>
+</ol>
+</blockquote>
+<p>执行 <code>monitorenter</code> 指令时 调用以下代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="n">IRT_ENTRY_NO_ASYNC</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">InterpreterRuntime</span><span class="o">::</span><span class="n">monitorenter</span><span class="p">(</span><span class="n">JavaThread</span><span class="o">*</span> <span class="kr">thread</span><span class="p">,</span> <span class="n">BasicObjectLock</span><span class="o">*</span> <span class="n">elem</span><span class="p">))</span>
+<span class="cp">#ifdef ASSERT
+</span><span class="cp"></span>  <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">last_frame</span><span class="p">().</span><span class="n">interpreter_frame_verify_monitor</span><span class="p">(</span><span class="n">elem</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="cp"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">PrintBiasedLockingStatistics</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Atomic</span><span class="o">::</span><span class="n">inc</span><span class="p">(</span><span class="n">BiasedLocking</span><span class="o">::</span><span class="n">slow_path_entry_count_addr</span><span class="p">());</span>
+  <span class="p">}</span>
+  <span class="n">Handle</span> <span class="nf">h_obj</span><span class="p">(</span><span class="kr">thread</span><span class="p">,</span> <span class="n">elem</span><span class="o">-&gt;</span><span class="n">obj</span><span class="p">());</span>
+  <span class="n">assert</span><span class="p">(</span><span class="n">Universe</span><span class="o">::</span><span class="n">heap</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">is_in_reserved_or_null</span><span class="p">(</span><span class="n">h_obj</span><span class="p">()),</span><span class="s">&#34;must be NULL or an object&#34;</span><span class="p">);</span>
+<span class="c1">// 是否使用偏向锁  JVM 启动时设置的偏向锁-XX:-UseBiasedLocking=false/true
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">UseBiasedLocking</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Retry fast entry if bias is revoked to avoid unnecessary inflation
+</span><span class="c1"></span>    <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">fast_enter</span><span class="p">(</span><span class="n">h_obj</span><span class="p">,</span> <span class="n">elem</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">(),</span> <span class="nb">true</span><span class="p">,</span> <span class="n">CHECK</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="c1">// 轻量级锁
+</span><span class="c1"></span>    <span class="n">ObjectSynchronizer</span><span class="o">::</span><span class="n">slow_enter</span><span class="p">(</span><span class="n">h_obj</span><span class="p">,</span> <span class="n">elem</span><span class="o">-&gt;</span><span class="n">lock</span><span class="p">(),</span> <span class="n">CHECK</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">assert</span><span class="p">(</span><span class="n">Universe</span><span class="o">::</span><span class="n">heap</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">is_in_reserved_or_null</span><span class="p">(</span><span class="n">elem</span><span class="o">-&gt;</span><span class="n">obj</span><span class="p">()),</span>
+         <span class="s">&#34;must be NULL or an object&#34;</span><span class="p">);</span>
+<span class="cp">#ifdef ASSERT
+</span><span class="cp"></span>  <span class="kr">thread</span><span class="o">-&gt;</span><span class="n">last_frame</span><span class="p">().</span><span class="n">interpreter_frame_verify_monitor</span><span class="p">(</span><span class="n">elem</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="cp"></span><span class="n">IRT_END</span>
+</code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p><code>slow_enter</code> 方法主要是轻量级锁的一些操作，如果操作失败则会膨胀为重量级锁，过程前面已经描述比较清楚此处不在赘述。<code>enter</code> 方法则为重量级锁的入口源码如下</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="n">ATTR</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">enter</span><span class="p">(</span><span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">Thread</span> <span class="o">*</span> <span class="k">const</span> <span class="n">Self</span> <span class="o">=</span> <span class="n">THREAD</span> <span class="p">;</span>
+  <span class="kt">void</span> <span class="o">*</span> <span class="n">cur</span> <span class="p">;</span>
+  <span class="c1">// 省略部分代码
+</span><span class="c1"></span>  
+  <span class="c1">// 通过 CAS 操作尝试把 monitor 的_owner 字段设置为当前线程
+</span><span class="c1"></span>  <span class="n">cur</span> <span class="o">=</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_owner</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">cur</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+     <span class="n">assert</span> <span class="p">(</span><span class="n">_recursions</span> <span class="o">==</span> <span class="mi">0</span>   <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+     <span class="n">assert</span> <span class="p">(</span><span class="n">_owner</span>      <span class="o">==</span> <span class="n">Self</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+     <span class="k">return</span> <span class="p">;</span>
+  <span class="p">}</span>
+
+ <span class="c1">// 线程重入，recursions++
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">cur</span> <span class="o">==</span> <span class="n">Self</span><span class="p">)</span> <span class="p">{</span>
+     <span class="n">_recursions</span> <span class="o">++</span> <span class="p">;</span>
+     <span class="k">return</span> <span class="p">;</span>
+  <span class="p">}</span>
+
+    <span class="c1">// 如果当前线程是第一次进入该 monitor, 设置_recursions 为 1,_owner 为当前线程
+</span><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="n">Self</span><span class="o">-&gt;</span><span class="n">is_lock_owned</span> <span class="p">((</span><span class="n">address</span><span class="p">)</span><span class="n">cur</span><span class="p">))</span> <span class="p">{</span>
+    <span class="n">assert</span> <span class="p">(</span><span class="n">_recursions</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;internal state error&#34;</span><span class="p">);</span>
+    <span class="n">_recursions</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">;</span>
+    <span class="n">_owner</span> <span class="o">=</span> <span class="n">Self</span> <span class="p">;</span>
+    <span class="n">OwnerIsThread</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">;</span>
+    <span class="k">return</span> <span class="p">;</span>
+  <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+      <span class="n">jt</span><span class="o">-&gt;</span><span class="n">set_suspend_equivalent</span><span class="p">();</span>
+        <span class="c1">// 如果获取锁失败，则等待锁的释放；
+</span><span class="c1"></span>      <span class="n">EnterI</span> <span class="p">(</span><span class="n">THREAD</span><span class="p">)</span> <span class="p">;</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExitSuspendEquivalent</span><span class="p">(</span><span class="n">jt</span><span class="p">))</span> <span class="k">break</span> <span class="p">;</span>
+          <span class="n">_recursions</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span>
+      <span class="n">_succ</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+      <span class="n">exit</span> <span class="p">(</span><span class="nb">false</span><span class="p">,</span> <span class="n">Self</span><span class="p">)</span> <span class="p">;</span>
+
+      <span class="n">jt</span><span class="o">-&gt;</span><span class="n">java_suspend_self</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">Self</span><span class="o">-&gt;</span><span class="n">set_current_pending_monitor</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="monitor-等待">monitor 等待</h3>
+<blockquote>
+<ol>
+<li>当前线程被封装成 ObjectWaiter 对象 node，状态设置成 ObjectWaiter::TS_CXQ。</li>
+<li>for 循环通过 CAS 把 node 节点 push 到<code>_cxq</code>列表中，同一时刻可能有多个线程把自己的 node 节点 push 到<code>_cxq</code>列表中。</li>
+<li>node 节点 push 到_cxq 列表之后，通过自旋尝试获取锁，如果还是没有获取到锁则通过 park 将当前线程挂起等待被唤醒。</li>
+<li>当该线程被唤醒时会从挂起的点继续执行，通过 ObjectMonitor::TryLock 尝试获取锁。</li>
+</ol>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="c1">// 省略部分代码
+</span><span class="c1"></span><span class="kt">void</span> <span class="n">ATTR</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">EnterI</span> <span class="p">(</span><span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Thread</span> <span class="o">*</span> <span class="n">Self</span> <span class="o">=</span> <span class="n">THREAD</span> <span class="p">;</span>
+    <span class="n">assert</span> <span class="p">(</span><span class="n">Self</span><span class="o">-&gt;</span><span class="n">is_Java_thread</span><span class="p">(),</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+    <span class="n">assert</span> <span class="p">(((</span><span class="n">JavaThread</span> <span class="o">*</span><span class="p">)</span> <span class="n">Self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">thread_state</span><span class="p">()</span> <span class="o">==</span> <span class="n">_thread_blocked</span>   <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+
+    <span class="c1">// Try lock 尝试获取锁
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">TryLock</span> <span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_succ</span> <span class="o">!=</span> <span class="n">Self</span>              <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">Self</span>             <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_Responsible</span> <span class="o">!=</span> <span class="n">Self</span>       <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+        <span class="c1">// 如果获取成功则退出，避免 park unpark 系统调度的开销
+</span><span class="c1"></span>        <span class="k">return</span> <span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 自旋获取锁
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">TrySpin</span><span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">Self</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">);</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_succ</span> <span class="o">!=</span> <span class="n">Self</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">);</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_Responsible</span> <span class="o">!=</span> <span class="n">Self</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 当前线程被封装成 ObjectWaiter 对象 node, 状态设置成 ObjectWaiter::TS_CXQ
+</span><span class="c1"></span>    <span class="n">ObjectWaiter</span> <span class="nf">node</span><span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="p">;</span>
+    <span class="n">Self</span><span class="o">-&gt;</span><span class="n">_ParkEvent</span><span class="o">-&gt;</span><span class="n">reset</span><span class="p">()</span> <span class="p">;</span>
+    <span class="n">node</span><span class="p">.</span><span class="n">_prev</span>   <span class="o">=</span> <span class="p">(</span><span class="n">ObjectWaiter</span> <span class="o">*</span><span class="p">)</span> <span class="mh">0xBAD</span> <span class="p">;</span>
+    <span class="n">node</span><span class="p">.</span><span class="n">TState</span>  <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span> <span class="p">;</span>
+
+    <span class="c1">// 通过 CAS 把 node 节点 push 到_cxq 列表中
+</span><span class="c1"></span>    <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">nxt</span> <span class="p">;</span>
+    <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+        <span class="n">node</span><span class="p">.</span><span class="n">_next</span> <span class="o">=</span> <span class="n">nxt</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">node</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">nxt</span><span class="p">)</span> <span class="o">==</span> <span class="n">nxt</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+
+        <span class="c1">// 再次 tryLock
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">TryLock</span> <span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">assert</span> <span class="p">(</span><span class="n">_succ</span> <span class="o">!=</span> <span class="n">Self</span>         <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+            <span class="n">assert</span> <span class="p">(</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">Self</span>        <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+            <span class="n">assert</span> <span class="p">(</span><span class="n">_Responsible</span> <span class="o">!=</span> <span class="n">Self</span>  <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+            <span class="k">return</span> <span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+        <span class="c1">// 本段代码的主要思想和 AQS 中相似可以类比来看
+</span><span class="c1"></span>        <span class="c1">// 再次尝试
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">TryLock</span> <span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+        <span class="n">assert</span> <span class="p">(</span><span class="n">_owner</span> <span class="o">!=</span> <span class="n">Self</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">SyncFlags</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">_Responsible</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+           <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_Responsible</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="c1">// 满足条件则 park self
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">_Responsible</span> <span class="o">==</span> <span class="n">Self</span> <span class="o">||</span> <span class="p">(</span><span class="n">SyncFlags</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">TEVENT</span> <span class="p">(</span><span class="n">Inflated</span> <span class="n">enter</span> <span class="o">-</span> <span class="n">park</span> <span class="n">TIMED</span><span class="p">)</span> <span class="p">;</span>
+            <span class="n">Self</span><span class="o">-&gt;</span><span class="n">_ParkEvent</span><span class="o">-&gt;</span><span class="n">park</span> <span class="p">((</span><span class="n">jlong</span><span class="p">)</span> <span class="n">RecheckInterval</span><span class="p">)</span> <span class="p">;</span>
+            <span class="c1">// Increase the RecheckInterval, but clamp the value.
+</span><span class="c1"></span>            <span class="n">RecheckInterval</span> <span class="o">*=</span> <span class="mi">8</span> <span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">RecheckInterval</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">)</span> <span class="n">RecheckInterval</span> <span class="o">=</span> <span class="mi">1000</span> <span class="p">;</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">TEVENT</span> <span class="p">(</span><span class="n">Inflated</span> <span class="n">enter</span> <span class="o">-</span> <span class="n">park</span> <span class="n">UNTIMED</span><span class="p">)</span> <span class="p">;</span>
+            <span class="c1">// 通过 park 将当前线程挂起，等待被唤醒
+</span><span class="c1"></span>            <span class="n">Self</span><span class="o">-&gt;</span><span class="n">_ParkEvent</span><span class="o">-&gt;</span><span class="n">park</span><span class="p">()</span> <span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">TryLock</span><span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+        <span class="c1">// 再次尝试自旋
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">((</span><span class="n">Knob_SpinAfterFutile</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">TrySpin</span><span class="p">(</span><span class="n">Self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">;</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="monitor-释放">monitor 释放</h3>
+<blockquote>
+<p>当某个持有锁的线程执行完同步代码块时，会释放锁并 <code>unpark</code> 后续线程（由于篇幅只保留重要代码）。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="n">ATTR</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">exit</span><span class="p">(</span><span class="kt">bool</span> <span class="n">not_suspended</span><span class="p">,</span> <span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+   <span class="n">Thread</span> <span class="o">*</span> <span class="n">Self</span> <span class="o">=</span> <span class="n">THREAD</span> <span class="p">;</span>
+  
+   <span class="k">if</span> <span class="p">(</span><span class="n">_recursions</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+     <span class="n">_recursions</span><span class="o">--</span><span class="p">;</span>        <span class="c1">// this is simple recursive enter
+</span><span class="c1"></span>     <span class="n">TEVENT</span> <span class="p">(</span><span class="n">Inflated</span> <span class="n">exit</span> <span class="o">-</span> <span class="n">recursive</span><span class="p">)</span> <span class="p">;</span>
+     <span class="k">return</span> <span class="p">;</span>
+   <span class="p">}</span>
+
+      <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">w</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+      <span class="kt">int</span> <span class="n">QMode</span> <span class="o">=</span> <span class="n">Knob_QMode</span> <span class="p">;</span>
+
+    <span class="c1">// 直接绕过 EntryList 队列，从 cxq 队列中获取线程用于竞争锁
+</span><span class="c1"></span>      <span class="k">if</span> <span class="p">(</span><span class="n">QMode</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="n">_cxq</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">w</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+          <span class="n">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+          <span class="n">assert</span> <span class="p">(</span><span class="n">w</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+          <span class="n">ExitEpilog</span> <span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+          <span class="k">return</span> <span class="p">;</span>
+      <span class="p">}</span>
+    <span class="c1">// cxq 队列插入 EntryList 尾部
+</span><span class="c1"></span>      <span class="k">if</span> <span class="p">(</span><span class="n">QMode</span> <span class="o">==</span> <span class="mi">3</span> <span class="o">&amp;&amp;</span> <span class="n">_cxq</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">w</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+          <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+             <span class="n">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+             <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">ObjectWaiter</span> <span class="o">*</span><span class="p">)</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">u</span> <span class="o">==</span> <span class="n">w</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+             <span class="n">w</span> <span class="o">=</span> <span class="n">u</span> <span class="p">;</span>
+          <span class="p">}</span>
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">p</span> <span class="p">;</span>
+          <span class="k">for</span> <span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span> <span class="n">p</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">)</span> <span class="p">{</span>
+              <span class="n">guarantee</span> <span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+              <span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span> <span class="p">;</span>
+              <span class="n">p</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">q</span> <span class="p">;</span>
+              <span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="p">;</span>
+          <span class="p">}</span>
+
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">Tail</span> <span class="p">;</span>
+          <span class="k">for</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">=</span> <span class="n">_EntryList</span> <span class="p">;</span> <span class="n">Tail</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">;</span> <span class="n">Tail</span> <span class="o">=</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">)</span> <span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+              <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+              <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span>
+              <span class="n">w</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">Tail</span> <span class="p">;</span>
+          <span class="p">}</span>
+      <span class="p">}</span>
+
+    <span class="c1">// cxq 队列插入到_EntryList 头部
+</span><span class="c1"></span>      <span class="k">if</span> <span class="p">(</span><span class="n">QMode</span> <span class="o">==</span> <span class="mi">4</span> <span class="o">&amp;&amp;</span> <span class="n">_cxq</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+          <span class="c1">// 把 cxq 队列放入 EntryList
+</span><span class="c1"></span>          <span class="c1">// 此策略确保最近运行的线程位于 EntryList 的头部
+</span><span class="c1"></span>          <span class="n">w</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+          <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+             <span class="n">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+             <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">ObjectWaiter</span> <span class="o">*</span><span class="p">)</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+             <span class="k">if</span> <span class="p">(</span><span class="n">u</span> <span class="o">==</span> <span class="n">w</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+             <span class="n">w</span> <span class="o">=</span> <span class="n">u</span> <span class="p">;</span>
+          <span class="p">}</span>
+          <span class="n">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span>              <span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">p</span> <span class="p">;</span>
+          <span class="k">for</span> <span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span> <span class="n">p</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">)</span> <span class="p">{</span>
+              <span class="n">guarantee</span> <span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+              <span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span> <span class="p">;</span>
+              <span class="n">p</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">q</span> <span class="p">;</span>
+              <span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="p">;</span>
+          <span class="p">}</span>
+
+          <span class="k">if</span> <span class="p">(</span><span class="n">_EntryList</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+              <span class="n">q</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">_EntryList</span> <span class="p">;</span>
+              <span class="n">_EntryList</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">q</span> <span class="p">;</span>
+          <span class="p">}</span>
+          <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span>
+      <span class="p">}</span>
+
+      <span class="n">w</span> <span class="o">=</span> <span class="n">_EntryList</span>  <span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">assert</span> <span class="p">(</span><span class="n">w</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+          <span class="n">ExitEpilog</span> <span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+          <span class="k">return</span> <span class="p">;</span>
+      <span class="p">}</span>
+      <span class="n">w</span> <span class="o">=</span> <span class="n">_cxq</span> <span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">w</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="k">continue</span> <span class="p">;</span>
+
+      <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+          <span class="n">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+          <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">ObjectWaiter</span> <span class="o">*</span><span class="p">)</span> <span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span> <span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">u</span> <span class="o">==</span> <span class="n">w</span><span class="p">)</span> <span class="k">break</span> <span class="p">;</span>
+          <span class="n">w</span> <span class="o">=</span> <span class="n">u</span> <span class="p">;</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="n">QMode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+         <span class="c1">// QMode == 1 : 把 cxq 倾倒入 EntryList 逆序
+</span><span class="c1"></span>         <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">s</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+         <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">t</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span>
+         <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">u</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+         <span class="k">while</span> <span class="p">(</span><span class="n">t</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">guarantee</span> <span class="p">(</span><span class="n">t</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+             <span class="n">t</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span> <span class="p">;</span>
+             <span class="n">u</span> <span class="o">=</span> <span class="n">t</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="p">;</span>
+             <span class="n">t</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">u</span> <span class="p">;</span>
+             <span class="n">t</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">s</span> <span class="p">;</span>
+             <span class="n">s</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+             <span class="n">t</span> <span class="o">=</span> <span class="n">u</span> <span class="p">;</span>
+         <span class="p">}</span>
+         <span class="n">_EntryList</span>  <span class="o">=</span> <span class="n">s</span> <span class="p">;</span>
+         <span class="n">assert</span> <span class="p">(</span><span class="n">s</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+         <span class="c1">// QMode == 0 or QMode == 2
+</span><span class="c1"></span>         <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span>
+         <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span> <span class="p">;</span>
+         <span class="n">ObjectWaiter</span> <span class="o">*</span> <span class="n">p</span> <span class="p">;</span>
+          <span class="c1">// 将单向链表构造成双向环形链表；
+</span><span class="c1"></span>         <span class="k">for</span> <span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">w</span> <span class="p">;</span> <span class="n">p</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="p">;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">guarantee</span> <span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">,</span> <span class="s">&#34;Invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+             <span class="n">p</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span> <span class="p">;</span>
+             <span class="n">p</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">q</span> <span class="p">;</span>
+             <span class="n">q</span> <span class="o">=</span> <span class="n">p</span> <span class="p">;</span>
+         <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="n">_succ</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+
+      <span class="n">w</span> <span class="o">=</span> <span class="n">_EntryList</span>  <span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">w</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">guarantee</span> <span class="p">(</span><span class="n">w</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">==</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_ENTER</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">)</span> <span class="p">;</span>
+          <span class="n">ExitEpilog</span> <span class="p">(</span><span class="n">Self</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="p">;</span>
+          <span class="k">return</span> <span class="p">;</span>
+      <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="notify-唤醒">notify 唤醒</h3>
+<blockquote>
+<p>notify 或者 notifyAll 方法可以唤醒同一个锁监视器下调用 wait 挂起的线程，具体实现如下</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="kt">void</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">TRAPS</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">CHECK_OWNER</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">_WaitSet</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">TEVENT</span> <span class="p">(</span><span class="n">Empty</span> <span class="o">-</span> <span class="n">Notify</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">DTRACE_MONITOR_PROBE</span><span class="p">(</span><span class="n">notify</span><span class="p">,</span> <span class="k">this</span><span class="p">,</span> <span class="n">object</span><span class="p">(),</span> <span class="n">THREAD</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">Policy</span> <span class="o">=</span> <span class="n">Knob_MoveNotifyee</span><span class="p">;</span>
+
+    <span class="n">Thread</span><span class="o">::</span><span class="n">SpinAcquire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_WaitSetLock</span><span class="p">,</span> <span class="s">&#34;WaitSet - notify&#34;</span><span class="p">);</span>
+    <span class="n">ObjectWaiter</span> <span class="o">*</span><span class="n">iterator</span> <span class="o">=</span> <span class="n">DequeueWaiter</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">iterator</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// 省略一些代码
+</span><span class="c1"></span>
+         <span class="c1">// 头插 EntryList
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">List</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">List</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">List</span><span class="p">;</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// 尾插 EntryList
+</span><span class="c1"></span>            <span class="k">if</span> <span class="p">(</span><span class="n">List</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">ObjectWaiter</span> <span class="o">*</span><span class="n">Tail</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">=</span> <span class="n">List</span><span class="p">;</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">Tail</span> <span class="o">=</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">);</span>
+                <span class="n">assert</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">,</span> <span class="s">&#34;invariant&#34;</span><span class="p">);</span>
+                <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">Tail</span><span class="p">;</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// 头插 cxq
+</span><span class="c1"></span>            <span class="c1">// prepend to cxq
+</span><span class="c1"></span>            <span class="k">if</span> <span class="p">(</span><span class="n">List</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                <span class="n">_EntryList</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+                    <span class="n">ObjectWaiter</span> <span class="o">*</span><span class="n">Front</span> <span class="o">=</span> <span class="n">_cxq</span><span class="p">;</span>
+                    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">Front</span><span class="p">;</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="n">Front</span><span class="p">)</span> <span class="o">==</span> <span class="n">Front</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>      <span class="c1">// 尾插 cxq
+</span><span class="c1"></span>            <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_CXQ</span><span class="p">;</span>
+            <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+                <span class="n">ObjectWaiter</span> <span class="o">*</span><span class="n">Tail</span><span class="p">;</span>
+                <span class="n">Tail</span> <span class="o">=</span> <span class="n">_cxq</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">Tail</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">Atomic</span><span class="o">::</span><span class="n">cmpxchg_ptr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">_cxq</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">while</span> <span class="p">(</span><span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="n">Tail</span> <span class="o">=</span> <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span><span class="p">;</span>
+                    <span class="n">Tail</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">;</span>
+                    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_prev</span> <span class="o">=</span> <span class="n">Tail</span><span class="p">;</span>
+                    <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_next</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">ParkEvent</span> <span class="o">*</span><span class="n">ev</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">_event</span><span class="p">;</span>
+            <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">TState</span> <span class="o">=</span> <span class="n">ObjectWaiter</span><span class="o">::</span><span class="n">TS_RUN</span><span class="p">;</span>
+            <span class="n">OrderAccess</span><span class="o">::</span><span class="n">fence</span><span class="p">();</span>
+            <span class="n">ev</span><span class="o">-&gt;</span><span class="n">unpark</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">Policy</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">iterator</span><span class="o">-&gt;</span><span class="n">wait_reenter_begin</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// 自旋释放
+</span><span class="c1"></span>    <span class="n">Thread</span><span class="o">::</span><span class="n">SpinRelease</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_WaitSetLock</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">iterator</span> <span class="o">!=</span> <span class="nb">NULL</span> <span class="o">&amp;&amp;</span> <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">_sync_Notifications</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ObjectMonitor</span><span class="o">::</span><span class="n">_sync_Notifications</span><span class="o">-&gt;</span><span class="n">inc</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="总结">总结</h2>
+<p>本文介绍了 <code>synchronized</code> 工作原理和锁升级的过程。其中锁队列的协作流程较复杂，本文配了详细的流程图可以参照。最后附上了一部分重要代码的解析，理解 <code>synchronized</code> 原理之后便于写出性能更高的代码。</p>
+<p>简单的来说偏向锁通过对比 Mark Word thread id 解决加锁问题。而轻量级锁是通过用 CAS 操作 Mark Word 和自旋来解决加锁问题，避免线程阻塞和唤醒而影响性能。重量级锁是将除了拥有锁的线程以外的线程都阻塞。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="http://openjdk.java.net/groups/hotspot/docs/HotSpotGlossary.html">HotSpot Glossary of Terms</a></li>
+<li><a href="https://www.oracle.com/technetwork/java/6-performance-137236.html">Java SE 6 Performance White Paper</a></li>
+</ul>
+    </div>
+
+    
+    
+<div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">文章作者</span>
+    <span class="item-content">qingbozhang</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">上次更新</span>
+    <span class="item-content">
+      2021-02-02
+      
+    </span>
+  </p>
+  
+  <p class="copyright-item">
+    <span class="item-title">许可协议</span>
+    <span class="item-content"><a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a></span>
+  </p>
+</div>
+
+
+    
+    
+
+    <footer class="post-footer">
+      <div class="post-tags">
+          <a href="https://qingbozhang.github.io/tags/java/">java</a>
+          <a href="https://qingbozhang.github.io/tags/synchronized/">synchronized</a>
+          <a href="https://qingbozhang.github.io/tags/%E9%9A%90%E5%BC%8F%E9%94%81/">隐式锁</a>
+          
+        </div>
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/post/redis/dict/">
+            
+            <i class="iconfont">
+              <svg  class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M691.908486 949.511495l75.369571-89.491197c10.963703-12.998035 10.285251-32.864502-1.499144-44.378743L479.499795 515.267417 757.434875 204.940602c11.338233-12.190647 11.035334-32.285311-0.638543-44.850487l-80.46666-86.564541c-11.680017-12.583596-30.356378-12.893658-41.662889-0.716314L257.233596 494.235404c-11.332093 12.183484-11.041474 32.266891 0.657986 44.844348l80.46666 86.564541c1.772366 1.910513 3.706415 3.533476 5.750981 4.877077l306.620399 321.703933C662.505829 963.726242 680.945807 962.528973 691.908486 949.511495z"></path>
+</svg>
+
+            </i>
+            <span class="prev-text nav-default">redis - 字典</span>
+            <span class="prev-text nav-mobile">上一篇</span>
+          </a>
+        
+          <a class="next" href="/post/java/gc/">
+            <span class="next-text nav-default">GC - 1</span>
+            <span class="prev-text nav-mobile">下一篇</span>
+            
+            <i class="iconfont">
+              <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="18" height="18">
+  <path d="M332.091514 74.487481l-75.369571 89.491197c-10.963703 12.998035-10.285251 32.864502 1.499144 44.378743l286.278095 300.375162L266.565125 819.058374c-11.338233 12.190647-11.035334 32.285311 0.638543 44.850487l80.46666 86.564541c11.680017 12.583596 30.356378 12.893658 41.662889 0.716314l377.434212-421.426145c11.332093-12.183484 11.041474-32.266891-0.657986-44.844348l-80.46666-86.564541c-1.772366-1.910513-3.706415-3.533476-5.750981-4.877077L373.270379 71.774697C361.493148 60.273758 343.054193 61.470003 332.091514 74.487481z"></path>
+</svg>
+
+            </i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+    
+
+  
+
+        </div>
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="icon-links">
+  
+  
+    <a href="mailto:770554403@qq.com" rel="me noopener" class="iconfont"
+      title="email" >
+      <svg class="icon" viewBox="0 0 1451 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="36" height="36">
+  <path d="M664.781909 681.472759 0 97.881301C0 3.997201 71.046997 0 71.046997 0L474.477909 0 961.649408 0 1361.641813 0C1361.641813 0 1432.688811 3.997201 1432.688811 97.881301L771.345323 681.472759C771.345323 681.472759 764.482731 685.154773 753.594283 688.65053L753.594283 688.664858C741.602731 693.493018 729.424896 695.068979 718.077952 694.839748 706.731093 695.068979 694.553173 693.493018 682.561621 688.664858L682.561621 688.65053C671.644501 685.140446 664.781909 681.472759 664.781909 681.472759L664.781909 681.472759ZM718.063616 811.603883C693.779541 811.016482 658.879232 802.205449 619.10784 767.734955 542.989056 701.759633 0 212.052267 0 212.052267L0 942.809523C0 942.809523 0 1024 83.726336 1024L682.532949 1024 753.579947 1024 1348.948139 1024C1432.688811 1024 1432.688811 942.809523 1432.688811 942.809523L1432.688811 212.052267C1432.688811 212.052267 893.138176 701.759633 817.019477 767.734955 777.248 802.205449 742.347691 811.03081 718.063616 811.603883L718.063616 811.603883Z"></path>
+</svg>
+
+    </a>
+
+
+<a href="https://qingbozhang.github.io/index.xml" rel="noopener alternate" type="application/rss&#43;xml"
+    class="iconfont" title="rss" target="_blank">
+    <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="30" height="30">
+  <path d="M819.157333 1024C819.157333 574.592 449.408 204.8 0 204.8V0c561.706667 0 1024 462.293333 1024 1024h-204.842667zM140.416 743.04a140.8 140.8 0 0 1 140.501333 140.586667A140.928 140.928 0 0 1 140.074667 1024C62.72 1024 0 961.109333 0 883.626667s62.933333-140.544 140.416-140.586667zM678.784 1024h-199.04c0-263.210667-216.533333-479.786667-479.744-479.786667V345.173333c372.352 0 678.784 306.517333 678.784 678.826667z"></path>
+</svg>
+
+  </a>
+   
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - <a class="theme-link" href="https://github.com/xianmin/hugo-theme-jane">Jane</a>
+  </span>
+
+  <span class="copyright-year">
+    &copy;
+    
+      2017 -
+    2022
+    <span class="heart">
+      
+      <i class="iconfont">
+        <svg class="icon" viewBox="0 0 1025 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="14" height="14">
+  <path d="M1000.1 247.9c-15.5-37.3-37.6-70.6-65.7-98.9-54.4-54.8-125.8-85-201-85-85.7 0-166 39-221.4 107.4C456.6 103 376.3 64 290.6 64c-75.1 0-146.5 30.4-201.1 85.6-28.2 28.5-50.4 61.9-65.8 99.3-16 38.8-24 79.9-23.6 122.2 0.7 91.7 40.1 177.2 108.1 234.8 3.1 2.6 6 5.1 8.9 7.8 14.9 13.4 58 52.8 112.6 102.7 93.5 85.5 209.9 191.9 257.5 234.2 7 6.1 15.8 9.5 24.9 9.5 9.2 0 18.1-3.4 24.9-9.5 34.5-30.7 105.8-95.9 181.4-165 74.2-67.8 150.9-138 195.8-178.2 69.5-57.9 109.6-144.4 109.9-237.3 0.1-42.5-8-83.6-24-122.2z"
+   fill="#8a8a8a"></path>
+</svg>
+
+      </i>
+    </span><span class="author">
+        bobo
+        
+      </span></span>
+
+  
+  
+
+  
+</div>
+
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont">
+        
+        <svg class="icon" viewBox="0 0 1024 1024" version="1.1"
+  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="35" height="35">
+  <path d="M510.866688 227.694839 95.449397 629.218702l235.761562 0-2.057869 328.796468 362.40389 0L691.55698 628.188232l241.942331-3.089361L510.866688 227.694839zM63.840492 63.962777l894.052392 0 0 131.813095L63.840492 195.775872 63.840492 63.962777 63.840492 63.962777zM63.840492 63.962777"></path>
+</svg>
+
+      </i>
+    </div>
+  </div>
+  
+<script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+
+
+
+
+<script type="text/javascript" src="/js/main.638251f4230630f0335d8c6748e53a96f94b72670920b60c09a56fdc8bece214.js" integrity="sha256-Y4JR9CMGMPAzXYxnSOU6lvlLcmcJILYMCaVv3Ivs4hQ=" crossorigin="anonymous"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <script type="text/javascript" src="/js/load-photoswipe.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe.min.js"></script>
+    <script type="text/javascript" src="/lib/photoswipe/photoswipe-ui-default.min.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

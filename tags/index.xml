@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/</link>
+    <description>Recent content in Tags on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 01 Sep 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>redis</title>
+      <link>https://qingbozhang.github.io/tags/redis/</link>
+      <pubDate>Wed, 01 Sep 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/redis/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>java</title>
+      <link>https://qingbozhang.github.io/tags/java/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>synchronized</title>
+      <link>https://qingbozhang.github.io/tags/synchronized/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/synchronized/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>隐式锁</title>
+      <link>https://qingbozhang.github.io/tags/%E9%9A%90%E5%BC%8F%E9%94%81/</link>
+      <pubDate>Tue, 02 Feb 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/%E9%9A%90%E5%BC%8F%E9%94%81/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>GC</title>
+      <link>https://qingbozhang.github.io/tags/gc/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/gc/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hashmap</title>
+      <link>https://qingbozhang.github.io/tags/hashmap/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/hashmap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>JVM</title>
+      <link>https://qingbozhang.github.io/tags/jvm/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/jvm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rocketMQ</title>
+      <link>https://qingbozhang.github.io/tags/rocketmq/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/rocketmq/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>中间件</title>
+      <link>https://qingbozhang.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>http</title>
+      <link>https://qingbozhang.github.io/tags/http/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/http/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>util</title>
+      <link>https://qingbozhang.github.io/tags/util/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/util/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>网络</title>
+      <link>https://qingbozhang.github.io/tags/%E7%BD%91%E7%BB%9C/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/%E7%BD%91%E7%BB%9C/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>mybatis</title>
+      <link>https://qingbozhang.github.io/tags/mybatis/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/mybatis/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>sentinel</title>
+      <link>https://qingbozhang.github.io/tags/sentinel/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/sentinel/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Spring Security</title>
+      <link>https://qingbozhang.github.io/tags/spring-security/</link>
+      <pubDate>Fri, 01 Jan 2021 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/spring-security/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>grpc</title>
+      <link>https://qingbozhang.github.io/tags/grpc/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/grpc/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>thread</title>
+      <link>https://qingbozhang.github.io/tags/thread/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/thread/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>算法</title>
+      <link>https://qingbozhang.github.io/tags/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Wed, 01 Jan 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/%E7%AE%97%E6%B3%95/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tcp/ip</title>
+      <link>https://qingbozhang.github.io/tags/tcp/ip/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://qingbozhang.github.io/tags/tcp/ip/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

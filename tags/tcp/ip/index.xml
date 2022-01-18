@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tcp/ip on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/tcp/ip/</link>
+    <description>Recent content in tcp/ip on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language><atom:link href="https://qingbozhang.github.io/tags/tcp/ip/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>网络</title>
+      <link>https://qingbozhang.github.io/post/net/</link>
+      <pubDate>Fri, 01 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/net/</guid>
+      <description>&lt;h2 id=&#34;tcp-的三次握手&#34;&gt;TCP 的三次握手&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://qingbozhang.github.io/net/0.png&#34; alt=&#34;tcp&#34;&gt;
+三次握手的原因
+第三次握手是为了防止失效的连接请求到达服务器，导致服务器建立错误的连接。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

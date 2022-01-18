@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MQ on bobo的窝</title>
+    <link>https://qingbozhang.github.io/categories/mq/</link>
+    <description>Recent content in MQ on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 02 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/categories/mq/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>rocketMQ nameserv</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/2/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/2/</guid>
+      <description>架构设计 Broker消息服务器在启动时向所有NameServer注册，消息生产者（Producer）在发送消息之前先从NameServer获</description>
+    </item>
+    
+    <item>
+      <title>rocketMQ 整体架构</title>
+      <link>https://qingbozhang.github.io/post/rocketmq/1/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/rocketmq/1/</guid>
+      <description>整体架构 Producer：消息发布的角色，支持分布式集群方式部署。Producer通过MQ的负载均衡模块选择相应的Broker集群队列进行消</description>
+    </item>
+    
+  </channel>
+</rss>

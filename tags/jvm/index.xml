@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JVM on bobo的窝</title>
+    <link>https://qingbozhang.github.io/tags/jvm/</link>
+    <description>Recent content in JVM on bobo的窝</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 02 Jan 2021 15:43:48 +0800</lastBuildDate><atom:link href="https://qingbozhang.github.io/tags/jvm/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>GC - 1</title>
+      <link>https://qingbozhang.github.io/post/java/gc/</link>
+      <pubDate>Sat, 02 Jan 2021 15:43:48 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/java/gc/</guid>
+      <description>JVM 运行时数据区 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 +---------------------+------------------------------+ | 1 Shared | 2 Thread | | +----------------+ | +-----------+ +----------+ | | | | | | | | | | | | heap | | | jvm stack | | native stack | | | | | | | | | | +----------------+ |</description>
+    </item>
+    
+    <item>
+      <title>Java 性能调优实战</title>
+      <link>https://qingbozhang.github.io/post/work/1/</link>
+      <pubDate>Tue, 01 Dec 2020 15:00:00 +0800</pubDate>
+      
+      <guid>https://qingbozhang.github.io/post/work/1/</guid>
+      <description>背景 主要功能消费 talos 队列，对 nginx access log 进行解析、过滤、聚合等处理，然后转发到另一个队列。 主要特点有以下几个： 数据量大，1.6w/s 1 天大概 8 亿 需要</description>
+    </item>
+    
+  </channel>
+</rss>
